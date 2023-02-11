@@ -32,15 +32,21 @@ var roleUpgrader = {
 							case ERR_INVALID_ARGS:	 //-10
 									delete creep.memory.myPath;
 									break;
-
-							default: 
-									//creep.say('🤪');
-									break;
+							case OK:				// 0
+								var cur = _.find(creep.memory.myPath, (function(i) {
+									if (i.x - i.dx == creep.pos.x && i.y - i.dy == creep.pos.y) {
+										const look = creep.room.lookAt(i.x, i.y);
+										//creep.say(look[0].type);
+										if(look[0].type == 'creep') {
+											delete creep.memory.myPath;
+										}
+										//return i.x - i.dx == creep.pos.x && i.y - i.dy == creep.pos.y;
+									}
+									//if (cur) {
+									//	this.move(cur.direction);
+									//} else {delete creep.memory.myPath;}
+								}));
 						}
-						/*if (code == ERR_TIRED) { //-11,
-							Game.rooms[homeRoom].createConstructionSite(creep.pos, STRUCTURE_ROAD);
-						}*/
-						creep.say(code);
 					}
 				}
 

@@ -112,7 +112,7 @@ module.exports.loop = () => {
             name = Game.spawns.Spawn1.createCreep(
                 [WORK, CARRY, CARRY, MOVE, MOVE],
                 "Repairer: " + Game.time,
-                { role: "repairer", working: false, target: target, homeRoom: thisRoomh}
+                { role: "repairer", working: false, target: target, homeRoom: thisRoom}
             )
         } else if (hostiles) {
             name = Game.spawns.Spawn1.createCreep(
