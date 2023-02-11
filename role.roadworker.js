@@ -14,11 +14,12 @@ var roleRoadWorker = {
 				creep.memory.target = creep.room.find(FIND_SOURCES_ACTIVE)[0];
 			}
 			if(creep.memory.building) {
-			    creep.say('🚧 '+Game.cpu.bucket);
 				if(creep.store[RESOURCE_ENERGY] == 0) {
 					creep.memory.building = false;
 					creep.say('🔄 harvest');
 				}
+
+			    creep.say('🚧 '+Game.cpu.bucket);
 			
 				var targets = creep.pos.findInRange(FIND_CONSTRUCTION_SITES, 13);
 				if(!targets.length) {
