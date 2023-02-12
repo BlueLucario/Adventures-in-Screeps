@@ -94,13 +94,13 @@ module.exports.loop = () => {
             name = Game.spawns.Spawn1.createCreep(
                 [WORK, CARRY, CARRY, MOVE, MOVE],
                 "Upgrader: " + Game.time,
-                { role: "upgrader", upgrading: false, target: target, homeRoom: thisRoom}
+                { role: "upgrader", working: false, target: target, homeRoom: thisRoom}
             )
         } else if (currentRoadWorkers < minimumNoOfRoadWorkers) {
             name = Game.spawns.Spawn1.createCreep(
                 [WORK, CARRY, CARRY, MOVE, MOVE],
                 "Roadworker: " +Game.time,
-                { role: "roadworker", building: false, target: target, homeRoom: thisRoom}
+                { role: "roadworker", working: false, target: target, homeRoom: thisRoom}
             )
         } else if (currentBuilders < minimumNoOfBuilders) {
             name = Game.spawns.Spawn1.createCreep(
@@ -127,7 +127,7 @@ module.exports.loop = () => {
             name = Game.spawns.Spawn1.createCreep(
                 [WORK, CARRY, CARRY, MOVE, MOVE],
                 "Upgrader: " + Game.time,
-                { role: "upgrader", upgrading: false, target: target, homeRoom: thisRoom}
+                { role: "upgrader", working: false, target: target, homeRoom: thisRoom}
             )
         }
 

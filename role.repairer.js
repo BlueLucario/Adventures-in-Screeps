@@ -12,13 +12,21 @@ var roleRepairer = {
 				creep.memory.target = creep.room.find(FIND_SOURCES_ACTIVE)[0];
 			}
 
-			if(creep.memory.working) {
-				if(creep.store[RESOURCE_ENERGY] == 0) {
+			if(creep.memory.working && creep.store[RESOURCE_ENERGY] == 0) {
 					
-					delete creep.memory.myPath;
-					creep.memory.working = false;
-					creep.say('🔄');
-				}
+				delete creep.memory.myPath;
+				creep.memory.working = false;
+				creep.say('🔄');
+			}
+			if(!creep.memory.working && creep.store.getFreeCapacity() == 0) {
+					
+				delete creep.memory.myPath;
+				creep.memory.working = true;
+				creep.say('🧀');
+			}
+
+			if(creep.memory.working) {
+				
 			
 				if (creep.store.getFreeCapacity() == 0 || Game.getObjectById(creep.memory.target.id).hits >= Game.getObjectById(creep.memory.target.id).hitsMax) {
 					var targets = creep.room.find(FIND_STRUCTURES, {
@@ -54,7 +62,7 @@ var roleRepairer = {
 				if(creep.repair(Game.getObjectById(creep.memory.target.id)) == ERR_NOT_IN_RANGE) {
 					
 					if(!creep.memory.myPath) {
-						creep.say('New Path...');
+						creep.say('🎲New Path...');
 						creep.memory.myPath = creep.pos.findPathTo(creep.memory.target.pos.x, creep.memory.target.pos.y);
 					} else {
 						var cur = _.find(creep.memory.myPath, (function(i) {
@@ -75,19 +83,15 @@ var roleRepairer = {
 			
 			} else {
 
-				if(creep.store.getFreeCapacity() == 0) {
-					
-					delete creep.memory.myPath;
-					creep.memory.working = true;
-					creep.say('🧀');
-				}
+				
 
-				creep.memory.target = creep.room.find(FIND_SOURCES_ACTIVE)[0];
+				var sources = creep.room.find(FIND_SOURCES_ACTIVE);
+				creep.memory.target = sources[Game.time % sources.length];
 
 				if(creep.harvest(Game.getObjectById(creep.memory.target.id)) == ERR_NOT_IN_RANGE) {
 				
 					if(!creep.memory.myPath) {
-						creep.say('New Path...');
+						creep.say('🎲New Path...');
 						creep.memory.myPath = creep.pos.findPathTo(creep.memory.target.pos.x, creep.memory.target.pos.y);
 					} else {
 						var cur = _.find(creep.memory.myPath, (function(i) {
