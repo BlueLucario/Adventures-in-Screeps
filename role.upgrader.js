@@ -54,8 +54,10 @@ var roleUpgrader = {
 							if(look[0].type == 'creep') {
 								delete creep.memory.myPath;
 
-								var sources = creep.room.find(FIND_SOURCES_ACTIVE);
-								creep.memory.target = sources[Game.time % sources.length];
+								if (!creep.memory.working) {
+									var sources = creep.room.find(FIND_SOURCES_ACTIVE);
+									creep.memory.target = sources[Game.time % sources.length];
+								}
 							}
 							return i.x - i.dx == creep.pos.x && i.y - i.dy == creep.pos.y;
 						}
@@ -67,7 +69,7 @@ var roleUpgrader = {
 			}
 
 		} catch(error) {
-            console.log(error);
+            console.log(error.stack);
 			creep.say('☠️');
 		}
 	}

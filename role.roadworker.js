@@ -8,51 +8,52 @@ var roleRoadWorker = {
 			var moving = false;
 			var movingTo;
 
-			var homeRoom = creep.memory.homeRoom;
 			/*for (var creepName in Game.creeps) {
 				creep.say(Game.spawns['Spawn1'].pos.x + ':P');
 				Game.rooms.sim.createConstructionSite(Game.creeps[creepName].pos.x, Game.creeps[creepName].pos.y, STRUCTURE_ROAD);
 			}*/
-			if (!creep.memory.working) {creep.memory.working = false;}
 			if (creep.memory.target == 404) {
+				creep.memory.think_build_fix_upgrad_harvest = 0;
 				var sources = creep.room.find(FIND_SOURCES_ACTIVE);
 				creep.memory.target = sources[Game.time % sources.length];
 			}
 			
 			if(creep.memory.working && creep.store[RESOURCE_ENERGY] == 0) {
+				creep.memory.target = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
+				creep.memory.think_build_fix_upgrad_harvest = 4;
 				creep.memory.working = false;
+				delete creep.memory.myPath;
 				creep.say('⚡');
-			} else if(creep.store.getFreeCapacity() == 0) {
+			}
+			if(!creep.memory.working && creep.store.getFreeCapacity() == 0) {
+				creep.memory.think_build_fix_upgrad_harvest = 0;
 				creep.memory.working = true;
+				delete creep.memory.myPath;
 				creep.say('🚧 build');
 			}
 
 			if(creep.memory.working) {
 
-			    
-
-				if(!creep.memory.target) {
+			    if(creep.memory.think_build_fix_upgrad_harvest == 0) {
 					creep.say('What to do...');
-					var buildStuff = false;
-					var fixStuff = false;
-
+					for (var creepName in Game.creeps) {
+						Game.spawns['Spawn1'].room.createConstructionSite(Game.creeps[creepName].pos.x, Game.creeps[creepName].pos.y, STRUCTURE_ROAD);
+					}
+				
 					var targets = creep.pos.findInRange(FIND_CONSTRUCTION_SITES, 13);
 					if(!targets.length) {
 						targets = creep.room.find(FIND_CONSTRUCTION_SITES);
 					}
 					if(targets.length) {
 						creep.memory.target = targets[0];
-							buildStuff = true;
-						
-					} else {
-						for (var creepName in Game.creeps) {
-							creep.memory.looked = creep.room.lookAt(creepName.x, creepName.y);
-						
-							Game.spawns['Spawn1'].room.createConstructionSite(Game.creeps[creepName].pos.x, Game.creeps[creepName].pos.y, STRUCTURE_ROAD);
-							}
+						creep.memory.think_build_fix_upgrad_harvest = 1;
+					}
 
+					if(creep.memory.think_build_fix_upgrad_harvest == 0) {
+						//creep.memory.think_build_fix_upgrad_harvest = 2;
 
 							/*
+							
 						if (creep.store.getFreeCapacity() == 0 || Game.getObjectById(creep.memory.target.id).hits >= Game.getObjectById(creep.memory.target.id).hitsMax) {
 						var targets = creep.room.find(FIND_STRUCTURES, {
 							if(s.structureType == STRUCTURE_ROAD) {
@@ -65,18 +66,30 @@ var roleRoadWorker = {
 							creep.memory.target  = targets[0];
 						}*/
 					}
-				}
-				//if (buildStuff) {
-					if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
+					if(creep.memory.think_build_fix_upgrad_harvest == 0) {
+						creep.memory.think_build_fix_upgrad_harvest = 3;
+					}
+				} 
+				if(creep.memory.think_build_fix_upgrad_harvest == 1) {
+
+					if(creep.build(Game.getObjectById(creep.memory.target.id)) == ERR_NOT_IN_RANGE) {
 						moving = true;
 						movingTo = creep.memory.target;
 						creep.say('🚧 '+Game.cpu.bucket);
 					}
-				//}
+					
+				} else if(creep.memory.think_build_fix_upgrad_harvest == 2) {
+
+				} else if(creep.memory.think_build_fix_upgrad_harvest == 3) {
+
+					if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+						moving = true;
+						movingTo = creep.room.controller;
+						creep.say('🃏');
+					}
+				}
 
 			} else { /** !working **/
-				var sources = creep.room.find(FIND_SOURCES_ACTIVE);
-				creep.memory.target = sources[Game.time % sources.length];
 
 			
 				if(creep.harvest(Game.getObjectById(creep.memory.target.id)) == ERR_NOT_IN_RANGE) {
@@ -84,6 +97,7 @@ var roleRoadWorker = {
 					movingTo = creep.memory.target;
 				}
 			}
+
 			if (moving) {
 				if(!creep.memory.myPath) {
 					creep.say('🗺️');
@@ -94,9 +108,11 @@ var roleRoadWorker = {
 							const look = creep.room.lookAt(i.x, i.y);
 							if(look[0].type == 'creep') {
 								delete creep.memory.myPath;
-
-								var sources = creep.room.find(FIND_SOURCES_ACTIVE);
-								creep.memory.target = sources[Game.time % sources.length];
+								
+								if (!creep.memory.working) {
+									var sources = creep.room.find(FIND_SOURCES_ACTIVE);
+									creep.memory.target = sources[Game.time % sources.length];
+								}
 							}
 							return i.x - i.dx == creep.pos.x && i.y - i.dy == creep.pos.y;
 						}
@@ -108,7 +124,7 @@ var roleRoadWorker = {
 			}
 		    
 		} catch(error) {
-            console.log(error);
+            console.log(error.stack);
 			creep.say('☠️');
 		}
 	}

@@ -5,15 +5,16 @@ var roleRepairer = {
 	/** @param {Creep} creep **/
 	run: function(creep) {
 		try {
+			moving = false;
+			var movingTo;
 
 			if (creep.memory.target == 404) {
 
-				Game.spawns['Spawn1'].room.createConstructionSite(Game.spawns['Spawn1'].pos, STRUCTURE_RAMPART);
-				creep.memory.target = creep.room.find(FIND_SOURCES_ACTIVE)[0];
+				creep.memory.target = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
 			}
 
 			if(creep.memory.working && creep.store[RESOURCE_ENERGY] == 0) {
-					
+				creep.memory.target = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
 				delete creep.memory.myPath;
 				creep.memory.working = false;
 				creep.say('🔄');
@@ -61,61 +62,47 @@ var roleRepairer = {
 
 				if(creep.repair(Game.getObjectById(creep.memory.target.id)) == ERR_NOT_IN_RANGE) {
 					
-					if(!creep.memory.myPath) {
-						creep.say('🎲New Path...');
-						creep.memory.myPath = creep.pos.findPathTo(creep.memory.target.pos.x, creep.memory.target.pos.y);
-					} else {
-						var cur = _.find(creep.memory.myPath, (function(i) {
-							if (i.x - i.dx == creep.pos.x && i.y - i.dy == creep.pos.y) {
-								const look = creep.room.lookAt(i.x, i.y);
-								if(look[0].type == 'creep') {
-									delete creep.memory.myPath;
-								}
-								return i.x - i.dx == creep.pos.x && i.y - i.dy == creep.pos.y;
-							}
-						}));
-						if (cur) {
-							creep.move(cur.direction);
-						} else {delete creep.memory.myPath;}
-					}
+					moving = true;
+					movingTo = creep.memory.target;
 				}
 				
 			
-			} else {
-
-				
-
-				var sources = creep.room.find(FIND_SOURCES_ACTIVE);
-				creep.memory.target = sources[Game.time % sources.length];
+			} else { //!creep.memory.working
 
 				if(creep.harvest(Game.getObjectById(creep.memory.target.id)) == ERR_NOT_IN_RANGE) {
 				
-					if(!creep.memory.myPath) {
-						creep.say('🎲New Path...');
-						creep.memory.myPath = creep.pos.findPathTo(creep.memory.target.pos.x, creep.memory.target.pos.y);
-					} else {
-						var cur = _.find(creep.memory.myPath, (function(i) {
-							if (i.x - i.dx == creep.pos.x && i.y - i.dy == creep.pos.y) {
-								const look = creep.room.lookAt(i.x, i.y);
-								if(look[0].type == 'creep') {
-									delete creep.memory.myPath;
+					moving = true;
+					movingTo = creep.memory.target;
+				}
+			}
 
+			if (moving) {
+				if(!creep.memory.myPath) {
+					creep.say('🗺️');
+					creep.memory.myPath = creep.pos.findPathTo(movingTo.pos.x, movingTo.pos.y);
+				} else {
+					var cur = _.find(creep.memory.myPath, (function(i) {
+						if (i.x - i.dx == creep.pos.x && i.y - i.dy == creep.pos.y) {
+							const look = creep.room.lookAt(i.x, i.y);
+							if(look[0].type == 'creep') {
+								delete creep.memory.myPath;
+								
+								if (!creep.memory.working) {
 									var sources = creep.room.find(FIND_SOURCES_ACTIVE);
 									creep.memory.target = sources[Game.time % sources.length];
 								}
-								return i.x - i.dx == creep.pos.x && i.y - i.dy == creep.pos.y;
 							}
-						}));
-						if (cur) {
-							creep.move(cur.direction);
-						} else {delete creep.memory.myPath;}
-					}
-					
+							return i.x - i.dx == creep.pos.x && i.y - i.dy == creep.pos.y;
+						}
+					}));
+					if (cur) {
+						creep.move(cur.direction);
+					} else {delete creep.memory.myPath;}
 				}
-				
 			}
+
 		} catch(error) {
-            console.log(error);
+            console.log(error.stack);
 			creep.say('☠️');
 		}
 	}
