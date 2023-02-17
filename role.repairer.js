@@ -9,7 +9,7 @@ var roleRepairer = {
 			var movingTo;
 
 			if (creep.memory.target == 404) {
-
+				creep.memory.think_work_upgrade = 0;
 				creep.memory.target = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
 			}
 
@@ -20,7 +20,7 @@ var roleRepairer = {
 				creep.say('🔄');
 			}
 			if(!creep.memory.working && creep.store.getFreeCapacity() == 0) {
-					
+				creep.memory.think_work_upgrade = 0;
 				delete creep.memory.myPath;
 				creep.memory.working = true;
 				creep.say('🧀');
@@ -28,42 +28,48 @@ var roleRepairer = {
 
 			if(creep.memory.working) {
 				
-			
-				if (creep.store.getFreeCapacity() == 0 || Game.getObjectById(creep.memory.target.id).hits >= Game.getObjectById(creep.memory.target.id).hitsMax) {
-					var targets = creep.room.find(FIND_STRUCTURES, {
-						filter: object => object.hits < (object.hitsMax*0.8)
-					});
-
-					targets.sort((a,b) => a.hits - b.hits);
-					if(targets.length > 0) {
-						creep.memory.target  = targets[0];
+				if (creep.memory.think_work_upgrade == 0) {
+					if (creep.store.getFreeCapacity() == 0 || Game.getObjectById(creep.memory.target.id).hits >= Game.getObjectById(creep.memory.target.id).hitsMax) {
+						var targets = creep.room.find(FIND_STRUCTURES, {
+							filter: (structure) => {
+								return (structure.my ||
+										structure.structureType == STRUCTURE_WALL) && 
+										structure.hits < (structure.hitsMax*0.8);
+							}
+						})
+						/*
+						var targets = creep.room.find(FIND_STRUCTURES, {
+							filter: object => object.hits < (object.hitsMax*0.8)
+						});
+						*/
+						targets.sort((a,b) => a.hits - b.hits);
+						if(targets.length > 0) {
+							creep.memory.target  = targets[0];
+							creep.memory.think_work_upgrade = 1;
+						} else {
+							creep.memory.think_work_upgrade = 2;
+						}
 					}
 				}
-				/*
-				var targetStructure = Game.getObjectById(creep.memory.target.id);
-				if (targetStructure) {
-					creep.memory.repairId = creep.memory.target.id;
-
-					let code = creep.repair(targetStructure);
-					this.emote(creep, '🔧 repair', code);
-
-					if (code == ERR_NOT_IN_RANGE) {
-						this.travelTo(creep, targetStructure, '#FF0000'); // red
-					} else if (code === ERR_INVALID_TARGET) {
-						console.log(`${creep} cannot repair ${targetStructure}`);
-						delete creep.memory.repairId;
-					} else if (code === ERR_NO_BODYPART) {
-						// unable to move?
-						this.suicide(creep);
+				if (creep.memory.think_work_upgrade == 1) {
+					var code = creep.repair(Game.getObjectById(creep.memory.target.id));
+					if(code == ERR_NOT_IN_RANGE) {
+						moving = true;
+						movingTo = creep.memory.target;
+						creep.say('🔧');
+					} else if (code == ERR_INVALID_TARGET) {
+						creep.memory.think_work_upgrade = 0;
+						creep.say('😿');
 					}
-				}*/
-
-
-
-				if(creep.repair(Game.getObjectById(creep.memory.target.id)) == ERR_NOT_IN_RANGE) {
-					
-					moving = true;
-					movingTo = creep.memory.target;
+				} else if (creep.memory.think_work_upgrade == 2) {
+					if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+						moving = true;
+						movingTo = creep.room.controller;
+						creep.say('🏛️');
+					} else if (code == ERR_INVALID_TARGET) {
+						creep.memory.think_work_upgrade = 0;
+						creep.say('😿');
+					}
 				}
 				
 			

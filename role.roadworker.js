@@ -47,45 +47,59 @@ var roleRoadWorker = {
 					if(targets.length) {
 						creep.memory.target = targets[0];
 						creep.memory.think_build_fix_upgrad_harvest = 1;
-					}
 
-					if(creep.memory.think_build_fix_upgrad_harvest == 0) {
-						//creep.memory.think_build_fix_upgrad_harvest = 2;
+					} else {
 
-							/*
-							
-						if (creep.store.getFreeCapacity() == 0 || Game.getObjectById(creep.memory.target.id).hits >= Game.getObjectById(creep.memory.target.id).hitsMax) {
-						var targets = creep.room.find(FIND_STRUCTURES, {
-							if(s.structureType == STRUCTURE_ROAD) {
-								filter: object => object.hits < (object.hitsMax*0.8)
+						let allRoads = Game.rooms[creep.memory.homeRoom].find(FIND_STRUCTURES, {filter: {structureType: STRUCTURE_ROAD}});
+						var minHP = 1;
+						var target;
+						for (road in allRoads) {
+							if (road.hits/road.hitsMax < minHP) {
+								target = road;
 							}
-						});
-
-						targets.sort((a,b) => a.hits - b.hits);
-						if(targets.length > 0) {
-							creep.memory.target  = targets[0];
-						}*/
-					}
-					if(creep.memory.think_build_fix_upgrad_harvest == 0) {
-						creep.memory.think_build_fix_upgrad_harvest = 3;
+						}
+						if (target) {
+							creep.memory.think_build_fix_upgrad_harvest = 2;
+							creep.memory.target = target;
+						} else {
+							creep.memory.think_build_fix_upgrad_harvest = 3;
+						}
 					}
 				} 
 				if(creep.memory.think_build_fix_upgrad_harvest == 1) {
 
-					if(creep.build(Game.getObjectById(creep.memory.target.id)) == ERR_NOT_IN_RANGE) {
+					var code = creep.build(Game.getObjectById(creep.memory.target.id));
+					if(code == ERR_NOT_IN_RANGE) {
 						moving = true;
 						movingTo = creep.memory.target;
 						creep.say('🚧 '+Game.cpu.bucket);
+					} else if (code == ERR_INVALID_TARGET) {
+						creep.memory.think_work_upgrade = 0;
+						creep.say('😿');
 					}
 					
 				} else if(creep.memory.think_build_fix_upgrad_harvest == 2) {
+					
+					var code = creep.repair(Game.getObjectById(creep.memory.target.id));
+					if(code == ERR_NOT_IN_RANGE) {
+						moving = true;
+						movingTo = creep.memory.target;
+						creep.say('🚧 '+Game.cpu.bucket);
+					} else if (code == ERR_INVALID_TARGET) {
+						creep.memory.think_work_upgrade = 0;
+						creep.say('😿');
+					}
 
 				} else if(creep.memory.think_build_fix_upgrad_harvest == 3) {
 
-					if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+					var code = creep.upgradeController(creep.room.controller);
+					if(code == ERR_NOT_IN_RANGE) {
 						moving = true;
 						movingTo = creep.room.controller;
 						creep.say('🃏');
+					} else if (code == ERR_INVALID_TARGET) {
+						creep.memory.think_work_upgrade = 0;
+						creep.say('😿');
 					}
 				}
 

@@ -21,6 +21,7 @@ var roleHarvester = {
 				creep.say('⚡');
 			}
 			if (!creep.memory.working && creep.store.getFreeCapacity() == 0) {
+
 				creep.memory.think_charg_uprgade_harvest = 0;
 				creep.memory.working = true;
 				delete creep.memory.myPath;
@@ -46,18 +47,24 @@ var roleHarvester = {
 					}
 				}
 				if (creep.memory.think_charg_uprgade_harvest == 1) {
-					var result = creep.transfer(Game.getObjectById(creep.memory.target.id), RESOURCE_ENERGY);
-					if(result == ERR_NOT_IN_RANGE) {
+					var code = creep.transfer(Game.getObjectById(creep.memory.target.id), RESOURCE_ENERGY);
+					if(code == ERR_NOT_IN_RANGE) {
 						moving = true;
 						movingTo = creep.memory.target;
 						creep.say('📦');
+					} else if (code == ERR_INVALID_TARGET) {
+						creep.memory.think_work_upgrade = 0;
+						creep.say('😿');
 					}
 				} else if (creep.memory.think_charg_uprgade_harvest == 2) {
-					var result = creep.upgradeController(creep.room.controller);
-					if(result == ERR_NOT_IN_RANGE) {
+					var code = creep.upgradeController(creep.room.controller);
+					if(code == ERR_NOT_IN_RANGE) {
 						moving = true;
 						movingTo = creep.room.controller;
 						creep.say('🚚');
+					} else if (code == ERR_INVALID_TARGET) {
+						creep.memory.think_work_upgrade = 0;
+						creep.say('😿');
 					}
 				} else if (creep.memory.think_charg_uprgade_harvest == 3) {}
 

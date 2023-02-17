@@ -53,10 +53,14 @@ var roleBuilder = {
 
 				}
 				if (creep.memory.thinking_building_harvesting_placing = 1) {
-					if(creep.build(creep.memory.target) == ERR_NOT_IN_RANGE) {
+					var code = creep.build(creep.memory.target);
+					if(code == ERR_NOT_IN_RANGE) {
 						creep.say('🏗️');
 						moving = true;
 						movingTo = creep.memory.target;
+					} else if (code == ERR_INVALID_TARGET) {
+						creep.memory.think_work_upgrade = 0;
+						creep.say('😿');
 					}
 
 				} else if (creep.memory.thinking_building_harvesting_placing = 2) {
@@ -69,10 +73,14 @@ var roleBuilder = {
 						}
 					});
 					if(targets.length > 0) {
-						if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+					var code = creep.transfer(targets[0], RESOURCE_ENERGY);
+						if(code == ERR_NOT_IN_RANGE) {
 							moving = true;
 							movingTo = targets[0];
 							creep.say('🚛');
+						} else if (code == ERR_INVALID_TARGET) {
+							creep.memory.think_work_upgrade = 0;
+							creep.say('😿');
 						}
 					}
 				} else if (creep.memory.thinking_building_harvesting_placing = 3) {
